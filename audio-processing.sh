@@ -1,23 +1,23 @@
-#!/bin/bash
+#!/bin/sh
 set -x
 set -e
 
 OUTFILE_FORMAT_LIST='wav mp3'
 
-#Update podcasts & download any new episodes
-~pcc/.local/bin/greg sync
+# Update podcasts & download any new episodes
+greg sync
 
 # Check if any new files have been downloaded
-if [ ! -n $(/usr/bin/find ~pcc/Podcasts/ -name "*.mp3" -print -quit) ]; then
+if [ ! -n $(find ~pcc/Podcasts/ -name "*.mp3" -print -quit) ]; then
   echo "No files found."
   exit 0
 fi
 
-for infile in $(/usr/bin/find ~pcc/Podcasts/ -name "*.mp3"); do
+for INFILE in $(find ~pcc/Podcasts/ -name "*.mp3"); do
 
-  #Make sure the file isn't already being processed
-  until status=$(/usr/bin/lsof $infile 2>&1 > /dev/null); do
-    if [ ! -n "$status" ]; then
+  # Make sure the file isn't already being processed
+  until STATUS=$(lsof $INFILE 2>&1 > /dev/null); do
+    if [ ! -n "$STATUS" ]; then
       # lsof printed an error string, file may or may not be open
       break
     fi
@@ -25,11 +25,11 @@ for infile in $(/usr/bin/find ~pcc/Podcasts/ -name "*.mp3"); do
     sleep 1
   done
   
-  if [ -z "$status" ]; then
+  if [ -z "$STATUS" ]; then
   # file has been closed, process it
-  FEED_NAME=$(echo $infile | cut -d "/" -f5)
+  FEED_NAME=$(echo $INFILE | cut -d "/" -f5)
   OUTFILE_PATH=/var/www/html/feeds/$FEED_NAME
-  OUTFILE_NAME=$(echo $infile | cut -d "/" -f6 | cut -d "." -f1)
+  OUTFILE_NAME=$(echo $INFILE | cut -d "/" -f6 | cut -d "." -f1)
 
     # Automatic handling of output formats from a space delimited list
     if [ ! -e $OUTFILE_PATH ]; then
@@ -38,15 +38,18 @@ for infile in $(/usr/bin/find ~pcc/Podcasts/ -name "*.mp3"); do
 
     for FORMAT in $OUTFILE_FORMAT_LIST; do
       OUTFILE=$OUTFILE_PATH/$OUTFILE_NAME.$FORMAT
-      sox --norm $infile $OUTFILE $(/bin/cat ~pcc/sox-basic-settings)
+      sox --norm $INFILE $OUTFILE $(cat ~pcc/sox-basic-settings)
   
-      #Insert an <item> linking the processed files to the feed's XML
+      # Insert an <item> linking the processed files to the feed's XML
+      ENCLOSURE_TYPE=$(if [ $FORMAT = mp3 ]; then echo 'audio/mpeg'; elif [ $FORMAT = wav ]; then echo 'audio/x-wav'; fi)
+      OUTFILE_LENGTH=$(wc -c < $OUTFILE_PATH/$OUTFILE_NAME.$FORMAT)
+      OUTFILE_LINK=http://$(hostname -i)/feeds/$FEED_NAME/$OUTFILE_NAME.$FORMAT
       RSS_ITEM=$(cat <<EOF
  \
 <item>  \
 <title>$FEED_NAME - PodCast Cleaner feed</title> \
-<link>http://$(hostname -i)/feeds/$FEED_NAME/$OUTFILE_NAME.$FORMAT</link> \
-<enclosure type="$(if [ $FORMAT = mp3 ]; then echo 'audio/mpeg'; elif [ $FORMAT = wav ]; then echo 'audio/x-wav'; fi)" url="http://$(hostname -i)/feeds/$FEED_NAME/$OUTFILE_NAME.$FORMAT" length="$(wc -c < $OUTFILE_PATH/$OUTFILE_NAME.$FORMAT)"/> \
+<link>$OUTFILE_LINK</link> \
+<enclosure type="$ENCLOSURE_TYPE" url="$OUTFILE_LINK" length="$OUTFILE_LENGTH"/> \
 <description>$FEED_NAME - $(date -u)</description> \
 </item> \
  \
@@ -62,7 +65,7 @@ EOF
     done
   fi
 
-  #Prevent future runs against the same file. Maybe we should just archive it instead of removing?
-  rm $infile
+  # Prevent future runs against the same file
+  mv $INFILE ~/Podcasts/archive
 
 done
