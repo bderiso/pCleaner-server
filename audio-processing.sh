@@ -6,10 +6,10 @@ set -e
 OUTFILE_FORMAT_LIST='wav,mp3'
 
 # Update podcasts & download any new episodes
-greg sync
+/home/pcc/.local/bin/greg sync
 
 # Check if any new files have been downloaded
-if [ ! -n "$(find ~pcc/Podcasts/ -type f -print -quit)" ]; then
+if [ ! -n "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit)" ]; then
   echo "No files found."
   exit 0
 fi
