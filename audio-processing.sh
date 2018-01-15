@@ -3,18 +3,25 @@ IFS=$'\n',
 set -e
 #set -x
 
-OUTFILE_FORMAT_LIST='wav,mp3'
+# Premium tier only
+#OUTFILE_FORMAT_LIST='wav,mp3'
+
+# Basic Tier
+OUTFILE_FORMAT_LIST='mp3'
+
+# Timestamp the logs
+echo "$(date -u):"
 
 # Update podcasts & download any new episodes
 /home/pcc/.local/bin/greg sync
 
 # Check if any new files have been downloaded
 if [ ! -n "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit)" ]; then
-  echo "No files found."
+  echo "$(date -u): No files found."
   exit 0
 fi
 
-for INFILE in $(find ~pcc/Podcasts/ -type f); do
+for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print); do
 
   # Make sure the file isn't already being processed
   until STATUS=	$(lsof "$INFILE" 2>&1 > /dev/null); do
@@ -43,13 +50,14 @@ for INFILE in $(find ~pcc/Podcasts/ -type f); do
       IFS=$'\n'
 #      I don't know why this stopped working, but it no longer parses the effects proerly; it tries to read them as an infile...
 #      sox --norm $INFILE $OUTFILE "$(cat ~pcc/sox-basic-settings)"
-      sox --norm $INFILE $OUTFILE
+      echo "$(date -u):"
+      sox -V --norm $INFILE $OUTFILE
       IFS=$'\n',
 
       # Insert an <item> linking the processed files to the feed's XML
       ENCLOSURE_TYPE=$(if [ "$FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
       OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$FORMAT")
-      OUTFILE_LINK=http://$(hostname)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$FORMAT"
+      OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$FORMAT"
       RSS_ITEM=$(cat <<EOF
  \
 <item>  \
@@ -72,7 +80,7 @@ EOF
   fi
 
   # Prevent future runs against the same file
-  mv "$INFILE" ~/Podcasts/archive/
+  rsync --remove-source-files "$INFILE" ~/Podcasts/archive/
 
 done
 
