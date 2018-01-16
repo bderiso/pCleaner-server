@@ -1,19 +1,17 @@
 #!/bin/bash
-IFS=$'\n',
 set -e
-#set -x
 
 # Premium tier only
-#OUTFILE_FORMAT_LIST='wav,mp3'
+#OUTFILE_FORMAT_LIST='mp3,flac,wav'
 
 # Basic Tier
 OUTFILE_FORMAT_LIST='mp3'
+AUDIO_FX="$(cat /home/pcc/sox-basic-settings)"
+
+IFS=$'\n',
 
 # Timestamp the logs
 echo "$(date -u):"
-
-# Update podcasts & download any new episodes
-/home/pcc/.local/bin/greg sync
 
 # Check if any new files have been downloaded
 if [ ! -n "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit)" ]; then
@@ -48,10 +46,10 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$FORMAT"
 
       IFS=$'\n'
-#      I don't know why this stopped working, but it no longer parses the effects proerly; it tries to read them as an infile...
-#      sox --norm $INFILE $OUTFILE "$(cat ~pcc/sox-basic-settings)"
       echo "$(date -u):"
-      sox -V --norm $INFILE $OUTFILE
+#      I don't know why this stopped working, but it no longer parses the effects proerly; it tries to read them as an infile...
+      sox --norm "$INFILE" "$OUTFILE" "$AUDIO_FX"
+#      sox -V --norm $INFILE $OUTFILE
       IFS=$'\n',
 
       # Insert an <item> linking the processed files to the feed's XML
