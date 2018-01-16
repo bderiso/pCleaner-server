@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
 
