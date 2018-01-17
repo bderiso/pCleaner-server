@@ -25,41 +25,41 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       break
     fi
     # lsof returned 1 but didn't print an error string, assume the file is open
-   exit 1 
+    exit 1 
   done
  
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
-    /usr/bin/faad $INFILE
+    /usr/bin/faad "$INFILE"
     rsync --remove-source-files "$INFILE" ~/Podcasts/archive/
     exit 0
   fi
  
   if [ -z "$STATUS" ]; then
-  # file has been closed, process it
-  FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
-  OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
-  OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
-
-    # Automatic handling of output formats from a space delimited list
-    if [ ! -e "$OUTFILE_PATH" ]; then
-      mkdir -p "$OUTFILE_PATH"
-    fi
-
-    for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-      OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-
-      unset IFS
-      echo "$(date -u):"
-      sox -V --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
-      IFS=$'\n',
-
-      # Insert an <item> linking the processed files to the feed's XML
-      ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
-      OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
-      OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-      RSS_ITEM=$(cat <<EOF
+    # file has been closed, process it
+    FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
+    OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
+    OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
+  
+      # Automatic handling of output formats from a space delimited list
+      if [ ! -e "$OUTFILE_PATH" ]; then
+        mkdir -p "$OUTFILE_PATH"
+      fi
+  
+      for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
+        OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+  
+        unset IFS
+        echo "$(date -u):"
+        sox -V --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
+        IFS=$'\n',
+  
+        # Insert an <item> linking the processed files to the feed's XML
+        ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
+        OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
+        OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+        RSS_ITEM=$(cat <<EOF
  \
 <item>  \
 <title>"$FEED_NAME" - PodCast Cleaner Feed</title> \
@@ -71,13 +71,13 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
 
 EOF
 )
-      if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
-        cp /var/www/html/feeds/feeds.rss "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-      fi
-
-      sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-
-    done
+        if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
+          cp /var/www/html/feeds/feeds.rss "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
+        fi
+  
+        sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
+  
+      done
   fi
 
   # Prevent future runs against the same file
