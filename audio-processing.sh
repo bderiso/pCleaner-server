@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
 
@@ -18,8 +19,10 @@ fi
 for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print); do
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
-   echo "$(date -u): Unsupported format: "$INFILE_FORMAT""
-   break
+  /usr/bin/faad $INFILE
+  rsync --remove-source-files "$INFILE" ~/Podcasts/archive/
+  echo "$(date -u): Unsupported format: m4a. Input file converted."
+  break
   fi
 
     # Make sure the file isn't already being processed
