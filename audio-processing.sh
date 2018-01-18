@@ -4,7 +4,7 @@
 set -e
 
 #Debug Mode
-#set -x
+set -x
 
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
@@ -54,7 +54,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
       OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-      FEED_URL="$(/home/pcc/.local/bin/greg info '$FEED_NAME' | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
+      FEED_URL="$(/home/pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
       RSS_IMAGE="$(cat <<EOF
 $(curl --silent $FEED_URL | fgrep -A4 '<image>') \
  \
