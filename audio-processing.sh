@@ -63,15 +63,16 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
       # Insert an <item> linking the processed files to the feed's XML
       ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
       OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
-      OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+      OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
       FEED_URL="$(/home/pcc/.local/bin/greg info 'Moon Eye Music Hour' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
-      RSS_IMAGE=$(cat <<'EOF'
-"$(curl --silent "$FEED_URL" | fgrep -A4 '<image>')" \
+      RSS_IMAGE="$(cat <<EOF
+$(curl --silent $FEED_URL | fgrep -A4 '<image>') \
  \
+
 EOF
-)
-      RSS_ITEM=$(cat <<'EOF'
+)"
+      RSS_ITEM=$(cat <<EOF
  \
 <item>  \
 <title>"$FEED_NAME" - PodCast Cleaner Feed</title> \
@@ -84,8 +85,8 @@ EOF
 EOF
 )
       if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
-        sed 's/<title>/<title>$FEED_NAME - /' /var/www/html/feeds/template.rss > "$FEED_RSS"
-        sed -i '/\/channel/ i\ '"$RSS_IMAGE"'' "$FEED_RSS" 
+        sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
+        sed -i '/\/channel/ i\ '$(echo $RSS_IMAGE)'' "$FEED_RSS" 
       fi
 
       sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
