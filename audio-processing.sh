@@ -16,23 +16,13 @@ AUDIO_FX="$(cat /home/pcc/sox-basic-settings)"
 IFS=$'\n',
 
 # Check if any new files have been downloaded
-if [ ! -n "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit)" ]; then
+if [ -z $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
   echo "$(date -u): No files found."
   exit 0
 fi
 
-for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print)"; do
+for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print); do
 
-  # Make sure the file isn't already being processed
-  until STATUS=	$(lsof "$INFILE" 2>&1 > /dev/null); do
-    if [ ! -n "$STATUS" ]; then
-      # lsof printed an error string, file may or may not be open
-      break
-    fi
-    # lsof returned 1 but didn't print an error string, assume the file is open
-    exit 1 
-  done
- 
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
@@ -41,7 +31,6 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
     exit 0
   fi
  
-  if [ -z "$STATUS" ]; then
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
@@ -57,7 +46,7 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
 
       unset IFS
       echo "$(date -u):"
-      sox -V --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
+      sox -V --no-clobber --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
       IFS=$'\n',
 
       # Insert an <item> linking the processed files to the feed's XML
@@ -65,7 +54,7 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
       OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
       OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-      FEED_URL="$(/home/pcc/.local/bin/greg info 'Moon Eye Music Hour' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
+      FEED_URL="$(/home/pcc/.local/bin/greg info '$FEED_NAME' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
       RSS_IMAGE="$(cat <<EOF
 $(curl --silent $FEED_URL | fgrep -A4 '<image>') \
  \
@@ -92,7 +81,6 @@ EOF
       sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
 
     done
-  fi
 
   # Prevent future runs against the same file
   rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
