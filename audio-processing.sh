@@ -47,24 +47,31 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
   
-      # Automatic handling of output formats from a space delimited list
-      if [ ! -e "$OUTFILE_PATH" ]; then
-        mkdir -p "$OUTFILE_PATH"
-      fi
-  
-      for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-        OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-  
-        unset IFS
-        echo "$(date -u):"
-        sox -V --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
-        IFS=$'\n',
-  
-        # Insert an <item> linking the processed files to the feed's XML
-        ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
-        OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
-        OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-        RSS_ITEM=$(cat <<EOF
+    # Automatic handling of output formats from a space delimited list
+    if [ ! -e "$OUTFILE_PATH" ]; then
+      mkdir -p "$OUTFILE_PATH"
+    fi
+
+    for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
+      OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+
+      unset IFS
+      echo "$(date -u):"
+      sox -V --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
+      IFS=$'\n',
+
+      # Insert an <item> linking the processed files to the feed's XML
+      ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
+      OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
+      OUTFILE_LINK=http://$(hostname -i)/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+      FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
+      FEED_URL="$(/home/pcc/.local/bin/greg info 'Moon Eye Music Hour' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
+      RSS_IMAGE=$(cat <<'EOF'
+"$(curl --silent "$FEED_URL" | fgrep -A4 '<image>')" \
+ \
+EOF
+)
+      RSS_ITEM=$(cat <<'EOF'
  \
 <item>  \
 <title>"$FEED_NAME" - PodCast Cleaner Feed</title> \
@@ -76,18 +83,14 @@ for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prun
 
 EOF
 )
-        FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-        if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
-          sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
+      if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
+        sed 's/<title>/<title>$FEED_NAME - /' /var/www/html/feeds/template.rss > "$FEED_RSS"
+        sed -i '/\/channel/ i\ '"$RSS_IMAGE"'' "$FEED_RSS" 
+      fi
 
-          FEED_URL="$(/home/pcc/.local/bin/greg info 'Moon Eye Music Hour' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
-          FEED_IMAGE="$(curl --silent "$FEED_URL" | fgrep -A4 '<image>')"
-          sed -i '/\/channel/ i\ '"$FEED_IMAGE"'' "$FEED_RSS" 
-        fi
-  
-        sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
-  
-      done
+      sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
+
+    done
   fi
 
   # Prevent future runs against the same file
