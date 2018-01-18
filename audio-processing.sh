@@ -1,5 +1,10 @@
 #!/bin/bash
+
+#Exit on error
 set -e
+
+#Debug Mode
+#set -x
 
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
@@ -16,7 +21,7 @@ if [ ! -n "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o
   exit 0
 fi
 
-for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print); do
+for INFILE in "$(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print)"; do
 
   # Make sure the file isn't already being processed
   until STATUS=	$(lsof "$INFILE" 2>&1 > /dev/null); do
@@ -32,7 +37,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
     /usr/bin/faad "$INFILE"
-    rsync --remove-source-files "$INFILE" ~/Podcasts/archive/
+    rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
     exit 0
   fi
  
@@ -71,17 +76,22 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
 
 EOF
 )
+        FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
         if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
-          cp /var/www/html/feeds/feeds.rss "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
+          sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
+
+          FEED_URL="$(/home/pcc/.local/bin/greg info 'Moon Eye Music Hour' | fgrep url | cut -d ' ' -f 6 | sed 's/feed/http/')"
+          FEED_IMAGE="$(curl --silent "$FEED_URL" | fgrep -A4 '<image>')"
+          sed -i '/\/channel/ i\ '"$FEED_IMAGE"'' "$FEED_RSS" 
         fi
   
-        sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
+        sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
   
       done
   fi
 
   # Prevent future runs against the same file
-  rsync --remove-source-files "$INFILE" ~/Podcasts/archive/
+  rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
 
 done
 
