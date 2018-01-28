@@ -4,7 +4,7 @@
 set -e
 
 #Debug Mode
-set -x
+#set -x
 
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
