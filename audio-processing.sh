@@ -26,7 +26,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
-    /usr/bin/faad "$INFILE"
+    /usr/bin/faad -q "$INFILE"
     rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
     exit 0
   fi
