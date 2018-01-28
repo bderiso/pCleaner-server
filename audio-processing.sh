@@ -55,8 +55,8 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
       FEED_URL="$(/home/pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
-      RSS_IMAGE="$(cat <<EOF
-$(curl --silent $FEED_URL | sed -nE "s/^.*(<.*<*image)(.*>)/\1\2/p") \
+      RSS_INFO="$(cat <<EOF
+$(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*image)(.*>)/\1\2/p") \
  \
 
 EOF
@@ -75,7 +75,7 @@ EOF
 )
       if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
         sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
-        sed -i '/\/channel/ i\ '$(echo $RSS_IMAGE)'' "$FEED_RSS" 
+        sed -i '/\/channel/ i\ '$(echo $RSS_INFO)'' "$FEED_RSS" 
       fi
 
       sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
