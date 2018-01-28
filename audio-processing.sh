@@ -56,7 +56,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
       FEED_URL="$(/home/pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
       RSS_IMAGE="$(cat <<EOF
-$(curl --silent $FEED_URL | fgrep -A4 '<image>') \
+$(curl --silent $FEED_URL | sed -nE "s/^.*(<.*<*image)(.*>)/\1\2/p") \
  \
 
 EOF
