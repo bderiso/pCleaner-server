@@ -58,6 +58,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       FEED_URL="$(/home/pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
       RSS_INFO="$(cat <<EOF
 $(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*image)(.*>)/\1\2/p") \
+$(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*thumbnail)(.*>)/\1\2/p") \
  \
 
 EOF
