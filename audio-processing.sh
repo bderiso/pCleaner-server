@@ -66,10 +66,10 @@ EOF
       RSS_ITEM=$(cat <<EOF
  \
 <item>  \
-<title>"$FEED_NAME" - PodCast Cleaner Feed</title> \
+<title>$EPISODE_TITLE</title> \
 <link>"$OUTFILE_LINK"</link> \
 <enclosure type="$ENCLOSURE_TYPE" url="$OUTFILE_LINK" length="$OUTFILE_LENGTH"/> \
-<description>"$EPISODE_TITLE"</description> \
+<description></description> \
 </item> \
  \
 
