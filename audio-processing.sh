@@ -33,7 +33,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
  
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
-    EPISODE_TITLE=$(greg check -f dtns | head -1 | sed "s/^0: //")
+    EPISODE_TITLE=$(/home/pcc/.local/bin/greg check -f dtns | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
   
