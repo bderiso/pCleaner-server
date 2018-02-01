@@ -33,6 +33,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
  
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
+    EPISODE_TITLE=$(greg check -f dtns | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
   
@@ -67,7 +68,7 @@ EOF
 <title>"$FEED_NAME" - PodCast Cleaner Feed</title> \
 <link>"$OUTFILE_LINK"</link> \
 <enclosure type="$ENCLOSURE_TYPE" url="$OUTFILE_LINK" length="$OUTFILE_LENGTH"/> \
-<description>"$FEED_NAME" - $(date -u)</description> \
+<description>"$EPISODE_TITLE"</description> \
 </item> \
  \
 
