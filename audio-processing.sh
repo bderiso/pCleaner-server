@@ -8,6 +8,7 @@ set -x
 
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
+#AUDIO_FX="$(cat /home/pcc/sox-premium-settings)"
 
 # Basic Tier
 OUTFILE_FORMAT_LIST='mp3'
@@ -36,7 +37,10 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
     EPISODE_TITLE=$(/home/pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
-  
+    T=-$(sox "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1); echo $T
+    R=$(echo "$T" / 1.1 | bc)
+    F=$(echo "$T" \* 2 | bc)
+ 
     # Automatic handling of output formats from a space delimited list
     if [ ! -e "$OUTFILE_PATH" ]; then
       mkdir -p "$OUTFILE_PATH"
@@ -47,7 +51,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
 
       unset IFS
       echo "$(date -u):"
-      sox -V --no-clobber --norm -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
+      sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
       IFS=$'\n',
 
       # Insert an <item> linking the processed files to the feed's XML
