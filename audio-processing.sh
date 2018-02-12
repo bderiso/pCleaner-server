@@ -37,6 +37,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
     EPISODE_TITLE=$(/home/pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
+    AD=0,0.050
     T=-$(sox "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1); echo $T
     R=$(echo "$T" / 1.1 | bc)
     F=$(echo "$T" \* 2 | bc)
