@@ -8,11 +8,11 @@ set -x
 
 # Premium tier only
 #OUTFILE_FORMAT_LIST='mp3,flac,wav'
-#AUDIO_FX="$(cat /home/pcc/sox-premium-settings)"
+#AUDIO_FX="$(cat /home/pcc/pCleaner /sox-premium-settings)"
 
 # Basic Tier
 OUTFILE_FORMAT_LIST='mp3'
-AUDIO_FX="$(cat /home/pcc/sox-basic-settings)"
+AUDIO_FX="$(cat /home/pcc/pCLeaner/sox-basic-settings)"
 
 IFS=$'\n',
 
