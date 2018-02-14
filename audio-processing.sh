@@ -6,15 +6,9 @@ set -e
 #Debug Mode
 set -x
 
-# Premium tier only
-#OUTFILE_FORMAT_LIST='mp3,flac,wav'
-#AUDIO_FX="$(cat /home/pcc/pCleaner/sox-premium-settings)"
-
-# Basic Tier
-OUTFILE_FORMAT_LIST='mp3'
-AUDIO_FX="$(cat /home/pcc/pCleaner/sox-basic-settings)"
-
-IFS=$'\n',
+#Set the Internal FIle Separator to newlines & comma only
+#IFS=$'\n',
+IFS=$'\n'
 
 # Check if any new files have been downloaded
 if [ -z $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
@@ -37,11 +31,22 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
     EPISODE_TITLE=$(/home/pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
-    AD=0,0.050
-    T=-$(sox "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1); echo $T
-    R=$(echo "$T" / 1.1 | bc)
-    F=$(echo "$T" \* 2 | bc)
- 
+    AD="0,0.050"
+    T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
+    R=$(echo "$T" / 1.5 | bc)
+    F=$(echo "$T" \* 3 | bc)
+    #TIER=basic
+    TIER=premium
+    #AUDIO_FX_SETTINGS=$(cat ~pcc/pCleaner/sox-"$TIER"-settings)
+    if [ "$TIER" = premium ]; then
+#        OUTFILE_FORMAT_LIST='mp3
+#flac
+#wav'
+          OUTFILE_FORMAT_LIST='wav'
+          else
+          OUTFILE_FORMAT_LIST='mp3'
+    fi
+
     # Automatic handling of output formats from a space delimited list
     if [ ! -e "$OUTFILE_PATH" ]; then
       mkdir -p "$OUTFILE_PATH"
@@ -50,10 +55,15 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
     for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
       OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
 
-      unset IFS
+      AUDIO_FX=$(echo eval $(cat ~pcc/pCleaner/sox-"$TIER"-settings))
+
       echo "$(date -u):"
-      sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $(printf "$AUDIO_FX")
-      IFS=$'\n',
+      #sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" "$AUDIO_FX"
+      if [ "$TIER" = premium ]; then
+        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -3 $F" 160 "$AD 6:$T,$R -3 $F" 1000 "$AD 6:$T,$R -3 $F" 8000 "$AD 6:$T,$R -3 $F" gain -n -2
+      else
+        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -3 $F gain -n -2
+      fi
 
       # Insert an <item> linking the processed files to the feed's XML
       ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
