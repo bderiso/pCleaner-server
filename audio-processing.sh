@@ -33,8 +33,8 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
     AD="0,0.050"
     T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
-    R=$(echo "$T" / 1.5 | bc)
-    F=$(echo "$T" \* 3 | bc)
+    R=$(echo "$T" / 3 | bc)
+    F=$(echo "$T" \* 3.5 | bc)
     #TIER=basic
     TIER=premium
     #AUDIO_FX_SETTINGS=$(cat ~pcc/pCleaner/sox-"$TIER"-settings)
@@ -60,9 +60,9 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       echo "$(date -u):"
       #sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" "$AUDIO_FX"
       if [ "$TIER" = premium ]; then
-        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -3 $F" 160 "$AD 6:$T,$R -3 $F" 1000 "$AD 6:$T,$R -3 $F" 8000 "$AD 6:$T,$R -3 $F" gain -n -2
+        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
       else
-        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -3 $F gain -n -2
+        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -6 $F gain -n -2
       fi
 
       # Insert an <item> linking the processed files to the feed's XML
@@ -92,10 +92,10 @@ EOF
 )
       if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
         sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
-        sed -i '/\/channel/ i\ '$(echo $RSS_INFO)'' "$FEED_RSS" 
+#        sed -i '/\/channel/ i\ '$(echo $RSS_INFO)'' "$FEED_RSS" 
       fi
 
-      sed -i '/\/channel/ i\ '"$RSS_ITEM"'' "$FEED_RSS"
+      sed -i '/-->/a '"$RSS_ITEM"'' "$FEED_RSS"
 
     done
 
