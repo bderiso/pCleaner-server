@@ -4,7 +4,7 @@
 set -e
 
 #Debug Mode
-set -x
+#set -x
 
 #Set the Internal File Separator to newlines & comma only
 #IFS=$'\n',
@@ -71,13 +71,7 @@ for INFILE in $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type 
       OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
       FEED_URL="$(~pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
-      RSS_INFO="$(cat <<EOF
-$(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*image)(.*>)/\1\2/p") \
-$(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*thumbnail)(.*>)/\1\2/p") \
- \
 
-EOF
-)"
       RSS_ITEM=$(cat <<EOF
  \
 <item>  \
@@ -90,11 +84,6 @@ EOF
 
 EOF
 )
-      if [ ! -e "$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss ]; then
-        sed "s/<title>/<title>$FEED_NAME - /" /var/www/html/feeds/template.rss > "$FEED_RSS"
-#        sed -i '/\/channel/ i\ '$(echo $RSS_INFO)'' "$FEED_RSS" 
-      fi
-
       sed -i '/-->/a '"$RSS_ITEM"'' "$FEED_RSS"
 
     done
