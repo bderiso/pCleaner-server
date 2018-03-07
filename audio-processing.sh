@@ -6,29 +6,29 @@ set -e
 #Debug Mode
 set -x
 
-#Set the Internal FIle Separator to newlines & comma only
+#Set the Internal File Separator to newlines & comma only
 #IFS=$'\n',
 IFS=$'\n'
 
 # Check if any new files have been downloaded
-if [ -z $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
+if [ -z $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
   echo "$(date -u): No files found."
   exit 0
 fi
 
-for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune -o -type f -print); do
+for INFILE in $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print); do
 
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
     /usr/bin/faad -q "$INFILE"
-    rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
+    rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
     exit 0
   fi
  
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
-    EPISODE_TITLE=$(/home/pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
+    EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
     OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
     AD="0,0.050"
@@ -70,7 +70,7 @@ for INFILE in $(find /home/pcc/Podcasts/ -path /home/pcc/Podcasts/archive -prune
       OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
       OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
       FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-      FEED_URL="$(/home/pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
+      FEED_URL="$(~pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
       RSS_INFO="$(cat <<EOF
 $(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*image)(.*>)/\1\2/p") \
 $(curl --silent $FEED_URL | sed "/<item>/q" | sed -nE "s/(.*)(.*<item>)/\1/p" | sed -nE "s/.*(<.*<*thumbnail)(.*>)/\1\2/p") \
@@ -100,7 +100,7 @@ EOF
     done
 
   # Prevent future runs against the same file
-  rsync --remove-source-files "$INFILE" /home/pcc/Podcasts/archive/
+  rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
 
 done
 
