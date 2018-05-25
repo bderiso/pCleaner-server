@@ -42,7 +42,7 @@ for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print
     echo "Unsupported format: m4a. File will be converted."
     "$FAAD" -q "$INFILE"
     rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
-    exit 0
+    exec "$0"
   fi
  
     # file has been closed, process it
