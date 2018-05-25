@@ -4,11 +4,13 @@
 set -e
 
 #Debug Mode
-#set -x
+set -x
 
 #Set the Internal File Separator to newlines & comma only
 #IFS=$'\n',
 IFS=$'\n'
+
+FAAD=$(which faad)
 
 IN_DIR=~/pCleaner-Input
 OUT_DIR=~/pCleaner-Output
@@ -33,7 +35,7 @@ for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "Unsupported format: m4a. File will be converted."
-    /usr/bin/faad -q "$INFILE"
+    "$FAAD" -q "$INFILE"
     rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
     exit 0
   fi
