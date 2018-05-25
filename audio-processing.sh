@@ -30,12 +30,12 @@ if [ $(uname -s) = Darwin ]; then
 fi
 
 # Check if any new files have been downloaded
-if [ -z $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
+if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
   echo "No files found. Please drop some files in $IN_DIR"
   exit 0
 fi
 
-for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print); do
+for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print); do
 
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
