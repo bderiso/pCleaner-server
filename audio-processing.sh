@@ -46,7 +46,7 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   fi
  
   # file has been closed, process it
-  OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
+  OUTFILE_NAME=$(echo "$INFILE" | cut -d '?' -f 1 | cut -d "." -f1)
   AD="0,0.050"
   T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
   R=$(echo "$T" / 3 | bc)
