@@ -55,7 +55,7 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
 
   # Automatic handling of output formats from a space delimited list
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
   done
 
   sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
