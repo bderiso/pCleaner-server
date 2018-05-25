@@ -24,6 +24,11 @@ if [ ! -e "$OUT_DIR" ]; then
   mkdir -p "$OUT_DIR"
 fi
 
+# Check if this script is running on MacOS, and if so then clean up the Input Directory 
+if [ $(uname -s) = Darwin ]; then
+  find "$IN_DIR" -name ".DS_Store" -delete
+fi
+
 # Check if any new files have been downloaded
 if [ -z $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
   echo "No files found. Please drop some files in $IN_DIR"
