@@ -32,7 +32,7 @@ for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print
 
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
-    echo "$(date -u): Unsupported format: m4a. File will be converted."
+    echo "Unsupported format: m4a. File will be converted."
     /usr/bin/faad -q "$INFILE"
     rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
     exit 0
@@ -69,7 +69,6 @@ for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print
 
       AUDIO_FX=$(echo eval $(cat ~pcc/pCleaner/sox-"$TIER"-settings))
 
-      echo "$(date -u):"
       #sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" "$AUDIO_FX"
       if [ "$TIER" = premium ]; then
         sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
