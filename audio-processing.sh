@@ -10,26 +10,29 @@ set -e
 #IFS=$'\n',
 IFS=$'\n'
 
+IN_DIR=~pcc/Podcasts/
+OUT_DIR=/var/www/html/feeds/
+
 # Check if any new files have been downloaded
-if [ -z $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
+if [ -z $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
   echo "$(date -u): No files found."
   exit 0
 fi
 
-for INFILE in $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print); do
+for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print); do
 
   INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
     /usr/bin/faad -q "$INFILE"
-    rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
+    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
     exit 0
   fi
  
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
     EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
-    OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
+    OUTFILE_PATH="$OUT_DIR"/"$FEED_NAME"
     OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
     AD="0,0.050"
     T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
@@ -89,7 +92,7 @@ EOF
     done
 
   # Prevent future runs against the same file
-  rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
+  rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
 
 done
 
