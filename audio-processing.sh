@@ -4,14 +4,14 @@
 set -e
 
 #Debug Mode
-#set -x
+set -x
 
 #Set the Internal File Separator to newlines & comma only
 #IFS=$'\n',
 IFS=$'\n'
 
-IN_DIR=~pcc/Podcasts/
-OUT_DIR=/var/www/html/feeds/
+IN_DIR=~/pCleaner-Input
+OUT_DIR=~/pCleaner-Output
 
 # Check that $IN_DIR & $OUT_DIR exist
 if [ ! -e "$IN_DIR" ]; then
