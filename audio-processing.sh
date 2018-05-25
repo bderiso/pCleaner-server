@@ -13,6 +13,15 @@ IFS=$'\n'
 IN_DIR=~pcc/Podcasts/
 OUT_DIR=/var/www/html/feeds/
 
+# Check that $IN_DIR & $OUT_DIR exist
+if [ ! -e "$IN_DIR" ]; then
+  mkdir -p "$IN_DIR"
+fi
+
+if [ ! -e "$OUT_DIR" ]; then
+  mkdir -p "$OUT_DIR"
+fi
+
 # Check if any new files have been downloaded
 if [ -z $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
   echo "$(date -u): No files found."
