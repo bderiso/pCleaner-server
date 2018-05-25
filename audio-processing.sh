@@ -24,7 +24,7 @@ fi
 
 # Check if any new files have been downloaded
 if [ -z $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
-  echo "$(date -u): No files found. Please drop some files in $IN_DIR"
+  echo "No files found. Please drop some files in $IN_DIR"
   exit 0
 fi
 
