@@ -78,27 +78,6 @@ for INFILE in $(find "$IN_DIR"/ -path "$IN_DIR"/archive -prune -o -type f -print
         sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -6 $F gain -n -2
       fi
 
-      # Insert an <item> linking the processed files to the feed's XML
-      ENCLOSURE_TYPE=$(if [ "$OUTFILE_FORMAT" = mp3 ]; then echo 'audio/mpeg'; elif [ "$OUTFILE_FORMAT" = wav ]; then echo 'audio/x-wav'; fi)
-      OUTFILE_LENGTH=$(wc -c < "$OUTFILE_PATH"/"$OUTFILE_NAME"."$OUTFILE_FORMAT")
-      OUTFILE_LINK=http://PodcastCleaner.com/feeds/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-      FEED_RSS="$OUTFILE_PATH"/"$OUTFILE_FORMAT"-feed.rss
-      FEED_URL="$(~pcc/.local/bin/greg info $FEED_NAME | fgrep url | cut -d ' ' -f 6 | sed 's/feed\:\/\//http\:\/\//')"
-
-      RSS_ITEM=$(cat <<EOF
- \
-<item>  \
-<title>$EPISODE_TITLE</title> \
-<link>"$OUTFILE_LINK"</link> \
-<enclosure type="$ENCLOSURE_TYPE" url="$OUTFILE_LINK" length="$OUTFILE_LENGTH"/> \
-<description></description> \
-</item> \
- \
-
-EOF
-)
-      sed -i '/-->/a '"$RSS_ITEM"'' "$FEED_RSS"
-
     done
 
   # Prevent future runs against the same file
