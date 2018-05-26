@@ -37,7 +37,7 @@ fi
 
 for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print); do
 
-  INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
+  INFILE_FORMAT=$(printf "${INFILE##*.}")
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "Unsupported format: m4a. File will be converted."
     "$FAAD" -q "$INFILE"
@@ -46,7 +46,7 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   fi
  
   # file has been closed, process it
-  OUTFILE_NAME=$(echo "$INFILE" | cut -d '?' -f 1 | cut -d "." -f1)
+  OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
   AD="0,0.050"
   T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
   R=$(echo "$T" / 3 | bc)
