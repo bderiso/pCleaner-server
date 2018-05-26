@@ -7,7 +7,6 @@ set -e
 #set -x
 
 #Set the Internal File Separator to newlines & comma only
-#IFS=$'\n',
 IFS=$'\n'
 
 FAAD=$(which faad)
