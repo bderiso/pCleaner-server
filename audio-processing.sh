@@ -4,7 +4,7 @@
 set -e
 
 #Debug Mode
-set -x
+#set -x
 
 #Set the Internal File Separator to newlines & comma only
 #IFS=$'\n',
