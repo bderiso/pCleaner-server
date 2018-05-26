@@ -7,30 +7,48 @@ set -e
 #set -x
 
 #Set the Internal File Separator to newlines & comma only
-#IFS=$'\n',
 IFS=$'\n'
 
+FAAD=$(which faad)
+
+IN_DIR=~pcc/Podcasts
+OUT_DIR=/var/www/html/feeds
+
+# Check that $IN_DIR & $OUT_DIR exist
+if [ ! -e "$IN_DIR" ]; then
+  mkdir -p "$IN_DIR"
+fi
+
+if [ ! -e "$OUT_DIR" ]; then
+  mkdir -p "$OUT_DIR"
+fi
+
+# Check if this script is running on MacOS, and if so then clean up the Input Directory 
+if [ $(uname -s) = Darwin ]; then
+  find "$IN_DIR" -name ".DS_Store" -delete
+fi
+
 # Check if any new files have been downloaded
-if [ -z $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print -quit) ]; then
+if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
   echo "$(date -u): No files found."
   exit 0
 fi
 
-for INFILE in $(find ~pcc/Podcasts/ -path ~pcc/Podcasts/archive -prune -o -type f -print); do
+for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print); do
 
-  INFILE_FORMAT=$(printf "$INFILE" | cut -d '?' -f 1 | cut -d '.' -f 2)
+  INFILE_FORMAT=$(printf "${INFILE##*.}")
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "$(date -u): Unsupported format: m4a. File will be converted."
-    /usr/bin/faad -q "$INFILE"
-    rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
-    exit 0
+    "$FAAD" -q "$INFILE"
+    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
+    exec "$0"
   fi
  
     # file has been closed, process it
     FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
     EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
-    OUTFILE_PATH=/var/www/html/feeds/"$FEED_NAME"
-    OUTFILE_NAME=$(echo "$INFILE" | cut -d "/" -f6 | cut -d "." -f1)
+    OUTFILE_PATH="$OUT_DIR"/"$FEED_NAME"
+    OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
     AD="0,0.050"
     T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
     R=$(echo "$T" / 3 | bc)
@@ -89,7 +107,7 @@ EOF
     done
 
   # Prevent future runs against the same file
-  rsync --remove-source-files "$INFILE" ~pcc/Podcasts/archive/
+  rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
 
 done
 
