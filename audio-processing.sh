@@ -1,17 +1,19 @@
 #!/bin/bash
 
-#Exit on error
+# Exit on error
 set -e
 
-#Debug Mode
+# Debug Mode
 #set -x
 
-#Set the Internal File Separator to newlines & comma only
+# Set the Internal File Separator to newlines & comma only
 IFS=$'\n'
 
-SOX=$(which sox)
-FAAD=$(which faad)
+# Find & variablize the installed path for dependecies
+SOX=$(command -v sox)
+FAAD=$(command -v faad)
 
+# Set the file input & output directories
 IN_DIR=~/pCleaner-Input
 OUT_DIR=~/pCleaner-Output
 
