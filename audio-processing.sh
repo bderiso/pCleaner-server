@@ -1,16 +1,35 @@
 #!/bin/bash
 
-#Exit on error
+# Exit on error
 set -e
 
-#Debug Mode
+# Debug Mode
 #set -x
 
-#Set the Internal File Separator to newlines & comma only
+# Set the Internal File Separator to newlines & comma only
 IFS=$'\n'
 
+SOX=$(which sox)
 FAAD=$(which faad)
 
+# Check dependecies & install if needed
+if [ ! -z $(command -v sox) ];
+ then echo;
+ else echo "sox not installed, we will install it now.";
+ brew install sox;
+fi
+
+if [ ! -z $(command -v faad) ];
+ then echo;
+ else echo "faad not installed, we will install it now.";
+ brew install faad2;
+fi
+
+# Find & variablize the installed path for dependecies
+SOX=$(command -v sox)
+FAAD=$(command -v faad)
+ 
+# Set the file input & output directories
 IN_DIR=~pcc/Podcasts
 OUT_DIR=/var/www/html/feeds
 
@@ -50,7 +69,7 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     OUTFILE_PATH="$OUT_DIR"/"$FEED_NAME"
     OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
     AD="0,0.050"
-    T=-$(sox -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
+    T=-$("$SOX" -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
     R=$(echo "$T" / 3 | bc)
     F=$(echo "$T" \* 3.5 | bc)
     #TIER=basic
@@ -76,11 +95,11 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
       AUDIO_FX=$(echo eval $(cat ~pcc/pCleaner/sox-"$TIER"-settings))
 
       echo "$(date -u):"
-      #sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" "$AUDIO_FX"
+      #"$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" "$AUDIO_FX"
       if [ "$TIER" = premium ]; then
-        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
+        "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
       else
-        sox -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -6 $F gain -n -2
+        "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" $AD 6:$T,$R -6 $F gain -n -2
       fi
 
       # Insert an <item> linking the processed files to the feed's XML
