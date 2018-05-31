@@ -9,9 +9,6 @@ set -e
 # Set the Internal File Separator to newlines & comma only
 IFS=$'\n'
 
-SOX=$(which sox)
-FAAD=$(which faad)
-
 # Check dependecies & install if needed
 if [ ! -z $(command -v sox) ];
  then echo;
