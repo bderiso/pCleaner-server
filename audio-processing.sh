@@ -9,6 +9,20 @@ set -e
 # Set the Internal File Separator to newlines & comma only
 IFS=$'\n'
 
+# Check dependecies & install if needed
+if [ ! -z $(command -v sox) ];
+ then echo;
+ else echo "sox not installed, we will install it now.";
+ brew install sox;
+fi
+
+if [ ! -z $(command -v faad) ];
+ then echo;
+ else echo "faad not installed, we will install it now.";
+ brew install faad2;
+fi
+
+
 # Find & variablize the installed path for dependecies
 SOX=$(command -v sox)
 FAAD=$(command -v faad)
