@@ -34,7 +34,7 @@ OUT_DIR=~/pCleaner-Output
 # Audio Settings
 FX=~/pCleaner-settings
 
-# Check that $IN_DIR, $OUT_DIR & #FX exist; if not then make them
+# Check that IN_DIR, OUT_DIR & FX exist; if not then make them
 if [ ! -e "$IN_DIR" ]; then
   echo "Creating the input directory: $IN_DIR"
   mkdir -p "$IN_DIR"
@@ -75,12 +75,19 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   fi
 
   FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
+
+  # Check that FEED_PATH exists; if not then make it
+  if [ ! -e "$FEED_PATH" ]; then
+    echo "Creating the input directory: $FEED_PATH"
+    mkdir -p "$FEED_PATH"
+  fi
+
   OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 
   # Automatic handling of output formats from a space delimited list
   OUTFILE_FORMAT_LIST='wav'
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUT_DIR"/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
   done
 
   echo "$(date -u):"
