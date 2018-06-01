@@ -9,13 +9,13 @@ set -e
 # Set the Internal File Separator to newlines only
 IFS=$'\n'
 
+# Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
  then echo;
  else echo "faad not installed, we will install it now.";
  brew install faad2;
 fi
 
-# Check dependecies & install if needed
 if [ ! -z $(command -v sox) ];
  then echo;
  else echo "sox not installed, we will install it now.";
@@ -28,11 +28,11 @@ SOX=$(command -v sox)
 
 # Setting locations
 # Input directory
-IN_DIR=~/pCleaner-Input
+IN_DIR=~pcc/Podcasts
 # Output directory
-OUT_DIR=~/pCleaner-Output
+OUT_DIR=/var/www/html/feeds
 # Audio Settings
-FX=~/pCleaner-settings
+FX=~pcc/pCleaner-settings
 
 # Check that $IN_DIR, $OUT_DIR & #FX exist; if not then make them
 if [ ! -e "$IN_DIR" ]; then
@@ -57,7 +57,7 @@ fi
 
 # Check if any new files have been downloaded; if zero then exit
 if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
-  echo "No files found. Please drop some files in $IN_DIR"
+  echo "$(date -u): No new files found."
   exit 0
 fi
 
@@ -74,20 +74,25 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     exec "$0"
   fi
 
-  # Automatic handling of output formats from a space delimited list
+  FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
   OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
+
+  # Automatic handling of output formats from a space delimited list
   OUTFILE_FORMAT_LIST='wav'
-
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-  done
+    OUTFILE="$OUT_DIR"/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
 
-  # This is where the magic happens
-  source ~/pCleaner-settings
-  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
+    echo "$(date -u):
+
+    # This is where the magic happens
+    source ~/pCleaner-settings
+    "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
+  done
 
   # Prevent future runs against the same file by moving out of the way
   rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
+
+  ./feed-processing.sh
 
 done
 
