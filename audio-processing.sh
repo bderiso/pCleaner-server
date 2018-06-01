@@ -91,6 +91,10 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   # Prevent future runs against the same file by moving out of the way
   rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
 
+  if [ -e ./feed-processing.sh ]; then
+    ./feed-processing.sh
+  fi
+
 done
 
 unset IFS
