@@ -57,7 +57,7 @@ fi
 
 # Check if any new files have been downloaded; if zero then exit
 if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
-  echo "No files found. Please drop some files in $IN_DIR"
+  echo "$(date -u): No new files found in $IN_DIR"
   exit 0
 fi
 
@@ -74,13 +74,16 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     exec "$0"
   fi
 
-  # Automatic handling of output formats from a space delimited list
+  FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
   OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
-  OUTFILE_FORMAT_LIST='wav'
 
+  # Automatic handling of output formats from a space delimited list
+  OUTFILE_FORMAT_LIST='wav'
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+    OUTFILE="$OUT_DIR"/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
   done
+
+  echo "$(date -u):
 
   # This is where the magic happens
   source ~/pCleaner-settings
