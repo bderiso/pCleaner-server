@@ -74,7 +74,6 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     exec "$0"
   fi
 
-  FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
   OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 
   # Automatic handling of output formats from a space delimited list
