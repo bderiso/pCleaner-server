@@ -6,7 +6,7 @@ set -e
 # Debug Mode
 #set -x
 
-# Set the Internal File Separator to newlines & comma only
+# Set the Internal File Separator to newlines only
 IFS=$'\n'
 
 # Check dependecies & install if needed
