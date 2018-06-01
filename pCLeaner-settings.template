@@ -1,0 +1,21 @@
+# Note: By default, this file uses the "Typical  values" from the SoX(1) man page
+# This is not the same as the automated settings used in the commercial version of pCleaner
+
+#EQ HighPass & LowPass
+HP=20
+LP=20k
+
+# Compressor Attack, Decay
+AD="0.3,0.8"
+
+# Compressor Knee
+K=6
+
+# Compressor Floor
+F=-70
+
+# Compressor Threshold
+T=-60
+
+# Compressor Ratio
+R=-20

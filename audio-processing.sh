@@ -9,6 +9,12 @@ set -e
 # Set the Internal File Separator to newlines only
 IFS=$'\n'
 
+if [ ! -z $(command -v faad) ];
+ then echo;
+ else echo "faad not installed, we will install it now.";
+ brew install faad2;
+fi
+
 # Check dependecies & install if needed
 if [ ! -z $(command -v sox) ];
  then echo;
@@ -16,27 +22,32 @@ if [ ! -z $(command -v sox) ];
  brew install sox;
 fi
 
-if [ ! -z $(command -v faad) ];
- then echo;
- else echo "faad not installed, we will install it now.";
- brew install faad2;
-fi
-
 # Find & variablize the installed path for dependecies
-SOX=$(command -v sox)
 FAAD=$(command -v faad)
+SOX=$(command -v sox)
 
-# Set the file input & output directories
+# Setting locations
+# Input directory
 IN_DIR=~/pCleaner-Input
+# Output directory
 OUT_DIR=~/pCleaner-Output
+# Audio Settings
+FX=~/pCleaner-settings
 
-# Check that $IN_DIR & $OUT_DIR exist
+# Check that $IN_DIR, $OUT_DIR & #FX exist; if not then make them
 if [ ! -e "$IN_DIR" ]; then
+  echo "Creating the input directory: $IN_DIR"
   mkdir -p "$IN_DIR"
 fi
 
 if [ ! -e "$OUT_DIR" ]; then
+  echo "Creating the output directory: $OUT_DIR"
   mkdir -p "$OUT_DIR"
+fi
+
+if [ ! -e "$FX" ]; then
+  echo "Generating the audio settings file: $FX"
+  cp ./pCleaner-settings.template "$FX"
 fi
 
 # Check if this script is running on MacOS, and if so then clean up the Input Directory 
@@ -72,12 +83,8 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   done
 
   # This is where the magic happens
-  . ./sox-settings
-#  AD="0,0.050"
-#  T=-$("$SOX" -t "$INFILE_FORMAT" "$INFILE" -n stats 2> >(fgrep 'RMS lev dB') | cut -d '-' -f2 | cut -d ' ' -f1)
-#  R=$(echo "$T" / 3 | bc)
-#  F=$(echo "$T" \* 3.5 | bc)
-  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass 20 lowpass 20k mcompand "$AD 6:$T,$R -6 $F" 160 "$AD 6:$T,$R -6 $F" 1000 "$AD 6:$T,$R -6 $F" 8000 "$AD 6:$T,$R -6 $F" gain -n -2
+  source ~/pCleaner-settings
+  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
 
   # Prevent future runs against the same file by moving out of the way
   rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
