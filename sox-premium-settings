@@ -1,1 +1,0 @@
-highpass 20 lowpass 20k mcompand \"$AD 6:$T,$R\" 160 \"$AD 6:$T,$R\" 1000 \"$AD 6:$T,$R\" 8000 \"$AD 6:$T,$R\" gain -n -2
