@@ -9,13 +9,13 @@ set -e
 # Set the Internal File Separator to newlines only
 IFS=$'\n'
 
+# Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
  then echo;
  else echo "faad not installed, we will install it now.";
  brew install faad2;
 fi
 
-# Check dependecies & install if needed
 if [ ! -z $(command -v sox) ];
  then echo;
  else echo "sox not installed, we will install it now.";
