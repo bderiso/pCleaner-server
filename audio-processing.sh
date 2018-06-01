@@ -74,14 +74,6 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     exec "$0"
   fi
 
-  FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
-
-  # Check that FEED_PATH exists; if not then make it
-  if [ ! -e "$FEED_PATH" ]; then
-    echo "Creating the input directory: $FEED_PATH"
-    mkdir -p "$FEED_PATH"
-  fi
-
   OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 
   # Automatic handling of output formats from a space delimited list
