@@ -34,7 +34,7 @@ OUT_DIR=/var/www/html/feeds
 # Audio Settings
 FX=~pcc/pCleaner-settings
 
-# Check that $IN_DIR, $OUT_DIR & #FX exist; if not then make them
+# Check that IN_DIR, OUT_DIR & FX exist; if not then make them
 if [ ! -e "$IN_DIR" ]; then
   echo "Creating the input directory: $IN_DIR"
   mkdir -p "$IN_DIR"
@@ -57,7 +57,7 @@ fi
 
 # Check if any new files have been downloaded; if zero then exit
 if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
-  echo "$(date -u): No new files found."
+  echo "$(date -u): No new files found in $IN_DIR"
   exit 0
 fi
 
@@ -80,13 +80,13 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
   # Automatic handling of output formats from a space delimited list
   OUTFILE_FORMAT_LIST='wav'
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUT_DIR"/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
+    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
 
-    echo "$(date -u):
+  echo "$(date -u):"
 
-    # This is where the magic happens
-    source ~/pCleaner-settings
-    "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
+  # This is where the magic happens
+  source ~/pCleaner-settings
+  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
   done
 
   # Prevent future runs against the same file by moving out of the way
