@@ -83,7 +83,7 @@ for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print)
     OUTFILE="$OUT_DIR"/"$FEED_NAME"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
   done
 
-  echo "$(date -u):
+  echo "$(date -u):"
 
   # This is where the magic happens
   source ~/pCleaner-settings
