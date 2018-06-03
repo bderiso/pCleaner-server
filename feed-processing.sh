@@ -1,6 +1,12 @@
 FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
 FEED_PATH"$OUT_DIR"/"$FEED_NAME"
-EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
+
+# The default podcast handler is greg, which is handy because we can  use it to query variables about individual feeds.
+PODCATCHER=$(command -v greg)
+
+# Depending on which podcast handler is used, the syntax of the following command will probably need to be changed.
+EPISODE_TITLE=$(“$PODCATCHER” check -f $FEED_NAME | head -1 | sed "s/^0: //")
+
 OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 
 # Check that FEED_PATH exists; if not then make it
