@@ -2,8 +2,10 @@ FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
 FEED_PATH"$OUT_DIR"/"$FEED_NAME"
 
 # The default podcast handler is “greg”, which is handy because we can  use it to query variables about individual feeds.
+PODCATCHER=greg
+
 # Let’s check to make sure it exists & install if needed
-if [ ! -z $(command -v greg) ];
+if [ ! -z $(command -v $PODCATCHER) ];
  then 
  PODCATCHER=$(command -v greg)
  else echo "greg not installed, we will install it now."
