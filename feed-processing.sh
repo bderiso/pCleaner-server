@@ -8,9 +8,9 @@ PODCATCHER=greg
 if [ ! -z $(command -v $PODCATCHER) ];
  then 
  PODCATCHER=$(command -v greg)
- else echo "greg not installed, we will install it now."
+ else echo "$PODCATCHER not installed, we will install it now."
  brew install greg
- echo “Please configure some feeds in `”$PODCATCHER”’ before continuing.”
+ echo “Please configure some feeds in `$PODCATCHER’ before continuing.”
  exit 0
 fi
 
