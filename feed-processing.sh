@@ -9,7 +9,7 @@ if [ ! -z $(command -v “$PODCATCHER”) ];
  then 
  PODCATCHER=$(command -v greg)
  else echo "$PODCATCHER not installed, we will install it now."
- brew install greg
+ pip3 install --user greg
  echo “Please configure some feeds in `$PODCATCHER’ before continuing.”
  exit 0
 fi
