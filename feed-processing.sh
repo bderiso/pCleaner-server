@@ -1,7 +1,7 @@
-EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
-OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
 FEED_PATH"$OUT_DIR"/"$FEED_NAME"
+EPISODE_TITLE=$(~pcc/.local/bin/greg check -f $FEED_NAME | head -1 | sed "s/^0: //")
+OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
 
 # Check that FEED_PATH exists; if not then make it
 if [ ! -e "$FEED_PATH" ]; then
