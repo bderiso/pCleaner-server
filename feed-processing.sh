@@ -10,7 +10,7 @@ if [ ! -z $(command -v “$PODCATCHER”) ];
  PODCATCHER=$(command -v greg)
  else echo "$PODCATCHER not installed, we will install it now."
  pip3 install --user greg
- echo “Please configure some feeds in `$PODCATCHER’ before continuing.”
+ echo “Please configure some feeds in `$PODCATCHER’ before continuing. for instructions: https://github.com/manolomartinez/greg/blob/master/README.md”
  exit 0
 fi
 
