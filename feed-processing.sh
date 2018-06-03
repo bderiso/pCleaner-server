@@ -5,7 +5,7 @@ FEED_PATH"$OUT_DIR"/"$FEED_NAME"
 PODCATCHER=greg
 
 # Let’s check to make sure it exists & install if needed
-if [ ! -z $(command -v $PODCATCHER) ];
+if [ ! -z $(command -v “$PODCATCHER”) ];
  then 
  PODCATCHER=$(command -v greg)
  else echo "$PODCATCHER not installed, we will install it now."
