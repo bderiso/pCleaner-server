@@ -1,10 +1,18 @@
 FEED_NAME=$(echo "$INFILE" | cut -d "/" -f5)
 FEED_PATH"$OUT_DIR"/"$FEED_NAME"
 
-# The default podcast handler is greg, which is handy because we can  use it to query variables about individual feeds.
-PODCATCHER=$(command -v greg)
+# The default podcast handler is “greg”, which is handy because we can  use it to query variables about individual feeds.
+# Let’s check to make sure it exists & install if needed
+if [ ! -z $(command -v greg) ];
+ then 
+ PODCATCHER=$(command -v greg)
+ else echo "greg not installed, we will install it now."
+ brew install greg
+ echo “Please configure some feeds in `greg’ and run it at least once before continuing.”
+ exit 0
+fi
 
-# Depending on which podcast handler is used, the syntax of the following command will probably need to be changed.
+# If you change which podcast handler is used, then the syntax of the following command will also need to be updated.
 EPISODE_TITLE=$(“$PODCATCHER” check -f $FEED_NAME | head -1 | sed "s/^0: //")
 
 OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
